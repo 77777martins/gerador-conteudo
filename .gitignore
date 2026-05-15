@@ -1,3 +1,4 @@
 notepad .gitignore
 node_modules
 .env
+backend/uploads
