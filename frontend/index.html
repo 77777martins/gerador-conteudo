@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gerador de Conteúdo</title>
+<link rel="icon" href="data:,">
+
+  <link rel="stylesheet" href="style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+    rel="stylesheet"
+  >
+</head>
+
+<body>
+
+  <div class="auth-modal" id="authModal">
+    <div class="auth-card">
+      <h2>🔐 Entrar no SaaS</h2>
+
+      <input
+        type="email"
+        id="authEmail"
+        placeholder="Seu email"
+      >
+
+      <input
+        type="password"
+        id="authSenha"
+        placeholder="Sua senha"
+      >
+
+      <button
+        class="gerar-btn"
+        id="loginBtn"
+      >
+        Entrar
+      </button>
+
+      <button
+        class="pro-btn"
+        id="registerBtn"
+      >
+        Criar Conta
+      </button>
+    </div>
+  </div>
+
+  <div class="bg-animation">
+    <span></span>
+    <span></span>
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+
+  <div class="container">
+
+<section class="hero-premium">
+
+  <div class="hero-content">
+
+    <span class="hero-badge">
+      ⚡ Plataforma SaaS com IA
+    </span>
+
+    <h1>
+      Crie posts profissionais com IA em segundos.
+    </h1>
+
+    <p>
+      Gere conteúdos criativos, copie legendas prontas e acelere seu marketing sem travar na tela em branco.
+    </p>
+
+    <div class="hero-actions">
+      <button
+        class="gerar-btn"
+        onclick="document.getElementById('tema').focus()"
+      >
+        ✨ Começar grátis
+      </button>
+
+      <button
+        class="pro-btn"
+        id="heroProBtn"
+      >
+        👑 Ver Plano PRO
+      </button>
+    </div>
+
+  </div>
+
+  <div class="hero-preview">
+
+    <div class="post-preview-card">
+      <span>POST GERADO</span>
+
+      <h3>
+        🍔 Hambúrguer Artesanal
+      </h3>
+
+      <p>
+        Sabor de verdade, pão macio, carne suculenta e aquele toque especial que transforma fome em desejo.
+      </p>
+
+      <small>
+        #delivery #hamburguer #marketing
+      </small>
+    </div>
+
+  </div>
+
+</section>
+
+    <div class="dashboard">
+
+      <div class="dash-card">
+        <span>⚡</span>
+
+        <div>
+          <h3 id="totalPosts">0</h3>
+          <p>Posts Gerados</p>
+        </div>
+      </div>
+
+      <div class="dash-card">
+        <span>👑</span>
+
+        <div>
+          <h3 id="planoAtual">FREE</h3>
+          <p>Plano Atual</p>
+        </div>
+      </div>
+
+      <div class="dash-card">
+        <span>📸</span>
+
+        <div>
+          <h3 id="totalUploads">0</h3>
+          <p>Uploads</p>
+        </div>
+      </div>
+
+      <div class="dash-card">
+        <span>🤖</span>
+
+        <div>
+          <h3>ONLINE</h3>
+          <p>IA Status</p>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="topo">
+
+      <div class="logo">
+        <div class="benefits-bar">
+
+  <div class="benefit-item">
+    ⚡ Geração ultra rápida
+  </div>
+
+  <div class="benefit-item">
+    🤖 IA avançada
+  </div>
+
+  <div class="benefit-item">
+    🚀 Posts virais
+  </div>
+
+  <div class="benefit-item">
+    👑 Plano PRO ilimitado
+  </div>
+
+</div>
+        <div class="logo-icon">
+          ⚡
+        </div>
+
+        <div>
+          <h1>Gerador <span>IA</span></h1>
+
+          <p class="subtitulo">
+            Crie posts virais e marketing automático.
+          </p>
+        </div>
+      </div>
+
+      <div class="plano">
+
+        <div class="plano-info">
+          <strong id="planoNome">
+            👑 Plano FREE
+          </strong>
+
+          <span id="postsRestantes">
+            3 posts restantes
+          </span>
+        </div>
+
+        <button
+          id="logoutBtn"
+          class="logout-btn"
+        >
+          Sair
+        </button>
+
+      </div>
+
+    </div>
+
+    <div class="card">
+      <label>
+        1. Qual o tema do post?
+      </label>
+
+      <input
+        type="text"
+        id="tema"
+        placeholder="Ex: hamburguer artesanal, loja de roupas..."
+      >
+    </div>
+
+    <div class="card">
+      <label>
+        2. Envie uma foto do produto (opcional)
+      </label>
+
+      <label class="upload-box" for="imagem">
+        <div class="upload-icon">
+          📸
+        </div>
+
+        <p>
+          Clique para escolher a imagem
+        </p>
+
+        <span class="upload-help">
+          PNG, JPG ou WEBP até 5MB
+        </span>
+
+        <input
+          type="file"
+          id="imagem"
+          accept="image/png, image/jpeg, image/webp"
+        >
+
+        <img id="preview" style="display:none;">
+      </label>
+
+      <div class="botoes">
+        <button
+          class="gerar-btn"
+          id="gerarBtn"
+        >
+          ✨ Gerar Conteúdo
+        </button>
+
+        <button
+          class="pro-btn"
+          id="proBtn"
+        >
+          👑 Upgrade PRO
+        </button>
+      </div>
+    </div>
+
+    <div id="resultado"></div>
+
+    <button
+      id="copiarBtn"
+      class="gerar-btn"
+      style="display:none; margin-top:20px;"
+    >
+      📋 Copiar Texto
+    </button>
+
+    <section class="pricing-section">
+
+  <h2>
+    🚀 Escolha seu plano
+  </h2>
+
+  <p class="pricing-subtitle">
+    Crie conteúdos profissionais com IA em segundos.
+  </p>
+
+  <div class="pricing-grid">
+
+    <div class="pricing-card free">
+
+      <h3>Plano FREE</h3>
+
+      <div class="price">
+        R$0
+      </div>
+
+      <ul>
+        <li>✅ 3 posts grátis</li>
+        <li>✅ Geração com IA</li>
+        <li>✅ Histórico</li>
+        <li>❌ Sem ilimitado</li>
+      </ul>
+
+      <button class="pricing-btn-free">
+        Plano Atual
+      </button>
+
+    </div>
+
+    <div class="pricing-card pro">
+
+      <div class="popular-badge">
+        MAIS POPULAR
+      </div>
+
+      <h3>Plano PRO</h3>
+
+      <div class="price">
+        R$19,90
+        <span>/mês</span>
+      </div>
+
+      <ul>
+        <li>🔥 Posts ilimitados</li>
+        <li>🔥 Conteúdo premium</li>
+        <li>🔥 Mais velocidade</li>
+        <li>🔥 Futuras IA avançadas</li>
+      </ul>
+
+      <button
+        class="pricing-btn-pro"
+        id="pricingProBtn"
+      >
+        👑 Assinar PRO
+      </button>
+
+    </div>
+
+  </div>
+
+</section>
+
+    <div class="historico-card">
+      <h2>
+        🕒 Histórico de Posts
+      </h2>
+
+      <button
+        class="limpar-btn"
+        id="limparBtn"
+      >
+        🗑 Limpar Histórico
+      </button>
+
+      <div id="historico"></div>
+    </div>
+
+  </div>
+
+  <div id="toast"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <script
+    type="module"
+    src="./js/main.js"
+  ></script>
+
+</body>
+</html>
