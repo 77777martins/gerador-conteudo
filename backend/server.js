@@ -313,27 +313,49 @@ Be concise. Do not invent a brand if it is not visible.
 console.log("ENTROU NA IA DE IMAGEM 🔥");
 
 const output = await replicate.run(
-  "black-forest-labs/flux-schnell",
+  "black-forest-labs/flux-kontext-pro",
   {
     input: {
       prompt: `
-Create a highly attractive Instagram advertisement.
+Improve this product photo into a professional Instagram advertisement.
 
-Preserve the original product and brand.
+IMPORTANT:
+- Keep EXACTLY the same product
+- Keep the same brand/logo
+- Do NOT change the product
+- Preserve original design and colors
 
-Create:
-- premium marketing design
-- dramatic lighting
-- modern social media style
-- eye-catching composition
-- strong contrast
-- viral advertising aesthetic
+Improve:
+- lighting
+- reflections
+- shadows
+- background
+- premium marketing look
+- cinematic style
+- social media advertising aesthetic
 
 Theme:
 ${tema}
-`
+`,
+      input_image: req.file.path
     }
   }
+);
+
+const primeiraImagem =
+  Array.isArray(output)
+    ? output[0]
+    : output;
+
+imagemGerada =
+  typeof primeiraImagem === "string"
+    ? primeiraImagem
+    : primeiraImagem?.url
+      ? primeiraImagem.url()
+      : null;
+
+console.log(
+  "IMAGEM FLUX IMG2IMG ✅"
 );
 
 const primeiraImagem =
