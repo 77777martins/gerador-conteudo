@@ -336,13 +336,19 @@ ${tema}
   }
 );
 
+const primeiraImagem =
+  Array.isArray(output)
+    ? output[0]
+    : output;
+
 imagemGerada =
-  output?.[0] || null;
+  typeof primeiraImagem === "string"
+    ? primeiraImagem
+    : primeiraImagem?.url
+      ? primeiraImagem.url()
+      : null;
 
-console.log(
-  "IMAGEM FLUX GERADA ✅"
-);
-
+console.log("IMAGEM FLUX:", imagemGerada);
 console.log("IMAGEM RECEBIDA DA OPENAI ✅");
 
        console.log("1 - COMEÇOU BLOCO IMAGEM");
