@@ -5,4 +5,4 @@ const isLocalhost =
 export const API_URL =
   isLocalhost
     ? "http://localhost:3000"
-    : "https://SEU-BACKEND.up.railway.app";
+    : "https://gerador-conteudo.onrender.com";
