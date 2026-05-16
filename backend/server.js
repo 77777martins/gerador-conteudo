@@ -4,6 +4,7 @@ import dotenv from "dotenv";
 import Stripe from "stripe";
 import multer from "multer";
 import OpenAI, { toFile } from "openai";
+import Replicate from "replicate";
 import { createClient } from "@supabase/supabase-js";
 import rateLimit from "express-rate-limit";
 import sharp from "sharp";
@@ -46,8 +47,8 @@ app.use(express.json());
 
 const stripe = new Stripe(process.env.STRIPE_KEY);
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_KEY
+const replicate = new Replicate({
+  auth: process.env.REPLICATE_API_TOKEN
 });
 
 const supabase = createClient(
@@ -306,50 +307,36 @@ Be concise. Do not invent a brand if it is not visible.
 
 console.log("ENTROU NA IA DE IMAGEM 🔥");
 
-const imageResponse =
-  await openai.images.edit({
-    model: "gpt-image-1",
+const output = await replicate.run(
+  "black-forest-labs/flux-schnell",
+  {
+    input: {
+      prompt: `
+Create a highly attractive Instagram advertisement.
 
-    image: await toFile(
-      imagemEditadaBuffer,
-      "produto.png",
-      {
-        type: "image/png"
-      }
-    ),
-
-   prompt: `
-Transform this uploaded product photo into a ready-to-post Instagram advertisement.
-
-Preserve:
-- the original product
-- package shape
-- visible brand/text
-- main colors
-- product identity
+Preserve the original product and brand.
 
 Create:
-- bold attention-grabbing composition
-- premium commercial lighting
-- modern social media background
+- premium marketing design
+- dramatic lighting
+- modern social media style
+- eye-catching composition
 - strong contrast
-- clean advertising layout
-- visual elements that make the product stand out
-- professional Instagram post style
+- viral advertising aesthetic
 
-Do not replace the product.
-Do not create a different brand.
-Do not add fake text if the brand is not clearly visible.
-
-Product analysis:
-${descricaoImagem || "No image analysis available."}
-
-User theme:
+Theme:
 ${tema}
-`,
+`
+    }
+  }
+);
 
-    size: "512x512"
-  });
+imagemGerada =
+  output?.[0] || null;
+
+console.log(
+  "IMAGEM FLUX GERADA ✅"
+);
 
 console.log("IMAGEM RECEBIDA DA OPENAI ✅");
 
