@@ -11,6 +11,10 @@ import sharp from "sharp";
 
 dotenv.config();
 
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_KEY
+});
+
 const app = express();
 
 const gerarLimiter = rateLimit({
