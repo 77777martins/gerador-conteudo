@@ -53,7 +53,8 @@ app.use(express.json());
 const stripe = new Stripe(process.env.STRIPE_KEY);
 
 const replicate = new Replicate({
-  auth: process.env.REPLICATE_API_TOKEN
+  auth: process.env.REPLICATE_API_TOKEN,
+  useFileOutput: false
 });
 
 const supabase = createClient(
@@ -312,51 +313,159 @@ Be concise. Do not invent a brand if it is not visible.
 
 console.log("ENTROU NA IA DE IMAGEM 🔥");
 
-const output = await replicate.run(
-  "black-forest-labs/flux-kontext-pro",
-  {
-    input: {
-      prompt: `
-Improve this product photo into a professional Instagram advertisement.
+console.log("INICIANDO PIPELINE PRODUTO + FUNDO ✅");
 
-IMPORTANT:
-- Keep EXACTLY the same product
-- Keep the same brand/logo
-- Do NOT change the product
-- Preserve original design and colors
+const produtoOriginalBuffer =
+  await sharp(req.file.buffer)
+    .resize(900, 900, {
+      fit: "inside",
+      withoutEnlargement: true
+    })
+    .png()
+    .toBuffer();
 
-Improve:
-- lighting
-- reflections
-- shadows
-- background
-- premium marketing look
-- cinematic style
-- social media advertising aesthetic
+const produtoBase64 =
+  `data:image/png;base64,${produtoOriginalBuffer.toString("base64")}`;
+
+const produtoSemFundoOutput =
+  await replicate.run(
+    "851-labs/background-remover",
+    {
+      input: {
+        image: produtoBase64
+      }
+    }
+  );
+
+const produtoSemFundoUrl =
+  Array.isArray(produtoSemFundoOutput)
+    ? produtoSemFundoOutput[0]
+    : produtoSemFundoOutput;
+
+if (!produtoSemFundoUrl) {
+  throw new Error("Não foi possível remover o fundo do produto.");
+}
+
+console.log("FUNDO DO PRODUTO REMOVIDO ✅");
+
+const backgroundOutput =
+  await replicate.run(
+    "black-forest-labs/flux-schnell",
+    {
+      input: {
+        prompt: `
+Create ONLY a premium advertising background for an Instagram product post.
+
+VERY IMPORTANT:
+- Do NOT create any product
+- Do NOT create bottles
+- Do NOT create packages
+- Do NOT create logos
+- Do NOT create food items
+- Background only
+- Leave clear space in the center for the real product
+
+Style:
+- premium commercial background
+- cinematic lighting
+- realistic shadows
+- clean social media ad design
+- attractive marketing scene
+- modern Instagram advertising
 
 Theme:
 ${tema}
 `,
-      input_image: req.file.path
+        width: 1024,
+        height: 1024,
+        num_outputs: 1
+      }
     }
-  }
-);
+  );
 
-const primeiraImagem =
-  Array.isArray(output)
-    ? output[0]
-    : output;
+const backgroundUrl =
+  Array.isArray(backgroundOutput)
+    ? backgroundOutput[0]
+    : backgroundOutput;
+
+if (!backgroundUrl) {
+  throw new Error("Não foi possível gerar o fundo.");
+}
+
+console.log("BACKGROUND GERADO ✅");
+
+const backgroundResponse =
+  await fetch(backgroundUrl);
+
+if (!backgroundResponse.ok) {
+  throw new Error("Erro ao baixar o background gerado.");
+}
+
+const backgroundBuffer =
+  Buffer.from(
+    await backgroundResponse.arrayBuffer()
+  );
+
+const produtoResponse =
+  await fetch(produtoSemFundoUrl);
+
+if (!produtoResponse.ok) {
+  throw new Error("Erro ao baixar produto sem fundo.");
+}
+
+const produtoSemFundoBuffer =
+  Buffer.from(
+    await produtoResponse.arrayBuffer()
+  );
+
+const produtoFinalBuffer =
+  await sharp(produtoSemFundoBuffer)
+    .resize(650, 650, {
+      fit: "inside",
+      withoutEnlargement: true
+    })
+    .png()
+    .toBuffer();
+
+const arteFinalBuffer =
+  await sharp(backgroundBuffer)
+    .resize(1024, 1024)
+    .composite([
+      {
+        input: produtoFinalBuffer,
+        gravity: "center"
+      }
+    ])
+    .png()
+    .toBuffer();
+
+const nomeArquivo =
+  `post-${Date.now()}.png`;
+
+const { error: uploadError } =
+  await supabase.storage
+    .from("posts")
+    .upload(
+      nomeArquivo,
+      arteFinalBuffer,
+      {
+        contentType: "image/png"
+      }
+    );
+
+if (uploadError) {
+  throw uploadError;
+}
+
+const { data: publicUrlData } =
+  supabase.storage
+    .from("posts")
+    .getPublicUrl(nomeArquivo);
 
 imagemGerada =
-  typeof primeiraImagem === "string"
-    ? primeiraImagem
-    : primeiraImagem?.url
-      ? primeiraImagem.url()
-      : null;
+  publicUrlData.publicUrl;
 
-console.log(
-  "IMAGEM FLUX IMG2IMG ✅"
-);
+console.log("ARTE FINAL COM PRODUTO ORIGINAL ✅");
 
 const primeiraImagem =
   Array.isArray(output)
