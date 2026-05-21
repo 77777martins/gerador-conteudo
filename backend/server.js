@@ -3,7 +3,7 @@ import cors from "cors";
 import dotenv from "dotenv";
 import Stripe from "stripe";
 import multer from "multer";
-import OpenAI, { toFile } from "openai";
+import OpenAI from "openai";
 import Replicate from "replicate";
 import { createClient } from "@supabase/supabase-js";
 import rateLimit from "express-rate-limit";
@@ -11,11 +11,22 @@ import sharp from "sharp";
 
 dotenv.config();
 
+const app = express();
+
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_KEY
 });
 
-const app = express();
+const stripe = new Stripe(process.env.STRIPE_KEY);
+
+const replicate = new Replicate({
+  auth: process.env.REPLICATE_API_TOKEN
+});
+
+const supabase = createClient(
+  process.env.SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_ROLE_KEY
+);
 
 const gerarLimiter = rateLimit({
   windowMs: 60 * 1000,
@@ -49,17 +60,6 @@ app.use(cors({
 }));
 
 app.use(express.json());
-
-const stripe = new Stripe(process.env.STRIPE_KEY);
-
-const replicate = new Replicate({
-  auth: process.env.REPLICATE_API_TOKEN
-});
-
-const supabase = createClient(
-  process.env.SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY
-);
 
 const upload = multer({
   storage: multer.memoryStorage(),
@@ -97,15 +97,11 @@ async function autenticarUsuario(req, res, next) {
     error
   } = await supabase.auth.getUser(token);
 
- if (error || !user) {
-
-  console.log("ERRO AUTH:", error);
-  console.log("USER AUTH:", user);
-
-  return res.status(401).json({
-    error: "Sessão inválida."
-  });
-}
+  if (error || !user) {
+    return res.status(401).json({
+      error: "Sessão inválida."
+    });
+  }
 
   req.user = user;
   next();
@@ -138,8 +134,6 @@ app.post("/criar-perfil", async (req, res) => {
       });
 
     if (error) {
-      console.log("ERRO AO SALVAR PERFIL:", error);
-
       return res.status(500).json({
         error: error.message
       });
@@ -227,15 +221,7 @@ app.post(
 
       let texto = "";
       let imagemGerada = null;
-let imagemPublica = null;
       let descricaoImagem = "";
-     
-      console.log("ARQUIVO RECEBIDO:", !!req.file);
-console.log("PLANO DO USUÁRIO:", profile.plan);
-console.log("DEBUG IMAGEM:");
-console.log("Tem arquivo?", !!req.file);
-console.log("Plano:", profile.plan);
-console.log("USE_FAKE_AI:", process.env.USE_FAKE_AI);
 
       if (
         req.file &&
@@ -290,7 +276,6 @@ Be concise. Do not invent a brand if it is not visible.
               .choices?.[0]
               ?.message
               ?.content || "";
-
         } catch (err) {
           console.log("ERRO ANALISAR IMAGEM:", err);
         }
@@ -302,145 +287,162 @@ Be concise. Do not invent a brand if it is not visible.
         process.env.USE_FAKE_AI !== "true"
       ) {
         try {
-          const imagemEditadaBuffer =
-  await sharp(req.file.buffer)
-    .resize(1024, 1024, {
-      fit: "cover"
-    })
-    .png()
-    .toBuffer();
+          console.log("INICIANDO PIPELINE PRODUTO + FUNDO ✅");
 
-console.log("ENTROU NA IA DE IMAGEM 🔥");
+          const produtoOriginalBuffer =
+            await sharp(req.file.buffer)
+              .resize(900, 900, {
+                fit: "inside",
+                withoutEnlargement: true
+              })
+              .png()
+              .toBuffer();
 
-const output = await replicate.run(
-  "black-forest-labs/flux-kontext-pro",
-  {
-    input: {
-      prompt: `
-Improve this product photo into a professional Instagram advertisement.
+          const produtoBase64 =
+            `data:image/png;base64,${produtoOriginalBuffer.toString("base64")}`;
 
-IMPORTANT:
-- Keep EXACTLY the same product
-- Keep the same brand/logo
-- Do NOT change the product
-- Preserve original design and colors
+          const produtoSemFundoOutput =
+            await replicate.run(
+              "851-labs/background-remover",
+              {
+                input: {
+                  image: produtoBase64
+                }
+              }
+            );
 
-Improve:
-- lighting
-- reflections
-- shadows
-- background
-- premium marketing look
-- cinematic style
-- social media advertising aesthetic
+          const produtoSemFundoUrl =
+            Array.isArray(produtoSemFundoOutput)
+              ? produtoSemFundoOutput[0]
+              : produtoSemFundoOutput;
+
+          if (!produtoSemFundoUrl) {
+            throw new Error("Não foi possível remover o fundo do produto.");
+          }
+
+          console.log("FUNDO DO PRODUTO REMOVIDO ✅");
+
+          const backgroundOutput =
+            await replicate.run(
+              "black-forest-labs/flux-schnell",
+              {
+                input: {
+                  prompt: `
+Create ONLY a premium advertising background for an Instagram product post.
+
+VERY IMPORTANT:
+- Do NOT create any product
+- Do NOT create bottles
+- Do NOT create packages
+- Do NOT create logos
+- Do NOT create food items
+- Background only
+- Leave clear space in the center for the real product
+
+Style:
+- premium commercial background
+- cinematic lighting
+- realistic shadows
+- clean social media ad design
+- attractive marketing scene
+- modern Instagram advertising
 
 Theme:
 ${tema}
 `,
-      input_image: req.file.path
-    }
-  }
-);
+                  width: 1024,
+                  height: 1024,
+                  num_outputs: 1
+                }
+              }
+            );
 
-const primeiraImagem =
-  Array.isArray(output)
-    ? output[0]
-    : output;
+          const backgroundUrl =
+            Array.isArray(backgroundOutput)
+              ? backgroundOutput[0]
+              : backgroundOutput;
 
-imagemGerada =
-  typeof primeiraImagem === "string"
-    ? primeiraImagem
-    : primeiraImagem?.url
-      ? primeiraImagem.url()
-      : null;
+          if (!backgroundUrl) {
+            throw new Error("Não foi possível gerar o fundo.");
+          }
 
-console.log(
-  "IMAGEM FLUX IMG2IMG ✅"
-);
+          console.log("BACKGROUND GERADO ✅");
 
-const primeiraImagem =
-  Array.isArray(output)
-    ? output[0]
-    : output;
+          const backgroundResponse =
+            await fetch(backgroundUrl);
 
-imagemGerada =
-  typeof primeiraImagem === "string"
-    ? primeiraImagem
-    : primeiraImagem?.url
-      ? primeiraImagem.url()
-      : null;
+          if (!backgroundResponse.ok) {
+            throw new Error("Erro ao baixar o background gerado.");
+          }
 
-console.log("IMAGEM FLUX:", imagemGerada);
-console.log("IMAGEM RECEBIDA DA OPENAI ✅");
+          const backgroundBuffer =
+            Buffer.from(
+              await backgroundResponse.arrayBuffer()
+            );
 
-       console.log("1 - COMEÇOU BLOCO IMAGEM");
+          const produtoResponse =
+            await fetch(produtoSemFundoUrl);
 
-const imagemBase64 =
-  imageResponse.data?.[0]?.b64_json;
+          if (!produtoResponse.ok) {
+            throw new Error("Erro ao baixar produto sem fundo.");
+          }
 
-console.log("2 - BASE64 RECEBIDO?", !!imagemBase64);
+          const produtoSemFundoBuffer =
+            Buffer.from(
+              await produtoResponse.arrayBuffer()
+            );
 
-if (imagemBase64) {
-  const buffer =
-    Buffer.from(imagemBase64, "base64");
+          const produtoFinalBuffer =
+            await sharp(produtoSemFundoBuffer)
+              .resize(650, 650, {
+                fit: "inside",
+                withoutEnlargement: true
+              })
+              .png()
+              .toBuffer();
 
-  console.log("3 - BUFFER CRIADO");
+          const arteFinalBuffer =
+            await sharp(backgroundBuffer)
+              .resize(1024, 1024)
+              .composite([
+                {
+                  input: produtoFinalBuffer,
+                  gravity: "center"
+                }
+              ])
+              .png()
+              .toBuffer();
 
-  const nomeArquivo =
-    `post-${Date.now()}.png`;
+          const nomeArquivo =
+            `post-${Date.now()}.png`;
 
-  console.log("4 - ENVIANDO STORAGE");
+          const { error: uploadError } =
+            await supabase.storage
+              .from("posts")
+              .upload(
+                nomeArquivo,
+                arteFinalBuffer,
+                {
+                  contentType: "image/png"
+                }
+              );
 
-  const { error: uploadError } =
-    await supabase.storage
-      .from("posts")
-      .upload(
-        nomeArquivo,
-        buffer,
-        {
-          contentType: "image/png"
-        }
-      );
+          if (uploadError) {
+            throw uploadError;
+          }
 
-  console.log("5 - VOLTOU DO STORAGE");
+          const { data: publicUrlData } =
+            supabase.storage
+              .from("posts")
+              .getPublicUrl(nomeArquivo);
 
-  if (uploadError) {
-    console.log("ERRO STORAGE:", uploadError);
-  } else {
-    const { data: publicUrlData } =
-      supabase.storage
-        .from("posts")
-        .getPublicUrl(nomeArquivo);
+          imagemGerada =
+            publicUrlData.publicUrl;
 
-    imagemPublica =
-      publicUrlData.publicUrl;
-
-    imagemGerada =
-      imagemPublica;
-
-    console.log("6 - IMAGEM SALVA:", imagemGerada);
-  }
-}
- else {
-
-  console.log(
-    "NENHUMA IMAGEM RETORNADA ❌"
-  );
-}
-
+          console.log("ARTE FINAL COM PRODUTO ORIGINAL ✅");
         } catch (imgErr) {
           console.log("ERRO IMAGEM IA:");
           console.log(imgErr);
-
-if (imgErr?.response?.data) {
-  console.log(
-    JSON.stringify(
-      imgErr.response.data,
-      null,
-      2
-    )
-  );
-}
         }
       }
 
@@ -462,9 +464,9 @@ Peça agora e surpreenda seus clientes.
                 content:
                   "You are a senior Brazilian marketing copywriter. Always write the final output in Brazilian Portuguese. Be short, direct, persuasive and ready for Instagram."
               },
-             {
-  role: "user",
-  content: `
+              {
+                role: "user",
+                content: `
 Create a short Brazilian Portuguese ad copy for Instagram.
 
 Use this product analysis:
@@ -482,8 +484,7 @@ Rules:
 - no explanation
 - return only the final ad text
 `
-}
-            
+              }
             ],
             temperature: 0.7
           });
@@ -498,7 +499,8 @@ Rules:
         });
       }
 
-      const novoUso = profile.posts_used + 1;
+      const novoUso =
+        profile.posts_used + 1;
 
       const { error: updateError } =
         await supabase
@@ -525,7 +527,6 @@ Rules:
             ? Math.max(3 - novoUso, 0)
             : "∞"
       });
-
     } catch (err) {
       console.log("ERRO AO GERAR:", err);
 
@@ -578,10 +579,10 @@ app.post(
           ],
 
           success_url:
-  `${process.env.FRONTEND_URL}/index.html?payment=success`,
+            `${process.env.FRONTEND_URL}/index.html?payment=success`,
 
           cancel_url:
-           `${process.env.FRONTEND_URL}/index.html?payment=cancel`
+            `${process.env.FRONTEND_URL}/index.html?payment=cancel`
         });
 
       return res.json({
@@ -627,15 +628,16 @@ app.post("/webhook", async (req, res) => {
           break;
         }
 
-        const { data, error } = await supabase
-          .from("profiles")
-          .update({
-            plan: "pro",
-            stripe_customer_id: customerId,
-            stripe_subscription_id: subscriptionId
-          })
-          .eq("id", userId)
-          .select();
+        const { data, error } =
+          await supabase
+            .from("profiles")
+            .update({
+              plan: "pro",
+              stripe_customer_id: customerId,
+              stripe_subscription_id: subscriptionId
+            })
+            .eq("id", userId)
+            .select();
 
         if (error) {
           console.log("ERRO ATIVAR PRO:", error);
@@ -653,13 +655,14 @@ app.post("/webhook", async (req, res) => {
 
         const subscriptionId = subscription.id;
 
-        const { error } = await supabase
-          .from("profiles")
-          .update({
-            plan: "free",
-            stripe_subscription_id: null
-          })
-          .eq("stripe_subscription_id", subscriptionId);
+        const { error } =
+          await supabase
+            .from("profiles")
+            .update({
+              plan: "free",
+              stripe_subscription_id: null
+            })
+            .eq("stripe_subscription_id", subscriptionId);
 
         if (error) {
           console.log("ERRO CANCELAR PRO:", error);
