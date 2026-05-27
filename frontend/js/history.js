@@ -1,55 +1,50 @@
 import { atualizarDashboard } from "./dashboard.js";
 import { mostrarToast } from "./ui.js";
 
-export function salvarHistorico(texto, imagem) {
+import {
+  buscarHistorico,
+  salvarHistoricoAPI,
+  limparHistoricoAPI
+} from "./api.js";
 
-  let historico =
-    JSON.parse(
-      localStorage.getItem("historico")
-    ) || [];
+let historicoAtual = [];
 
-  historico.unshift({
+export async function salvarHistorico(texto, imagem) {
+  await salvarHistoricoAPI(
     texto,
-    imagem,
-    data: new Date().toLocaleString()
-  });
-
-  historico = historico.slice(0, 20);
-
-  localStorage.setItem(
-    "historico",
-    JSON.stringify(historico)
+    imagem && !imagem.startsWith("data:image")
+      ? imagem
+      : null
   );
 
-  carregarHistorico();
+  await carregarHistorico();
   atualizarDashboard();
 }
 
-export function carregarHistorico() {
-
-  const historico =
-    JSON.parse(
-      localStorage.getItem("historico")
-    ) || [];
-
+export async function carregarHistorico() {
   const historicoDiv =
     document.getElementById("historico");
 
+  if (!historicoDiv) return;
+
+  historicoAtual = await buscarHistorico();
+
+  if (!Array.isArray(historicoAtual)) {
+    historicoAtual = [];
+  }
+
   historicoDiv.innerHTML = "";
 
-  if (historico.length === 0) {
-
+  if (historicoAtual.length === 0) {
     historicoDiv.innerHTML = `
       <div class="historico-item">
         <p>Nenhum post gerado ainda.</p>
       </div>
     `;
-
     return;
   }
 
-  historico.forEach((item, index) => {
-
+  historicoAtual.forEach((item, index) => {
     historicoDiv.innerHTML += `
       <div class="historico-item">
 
@@ -63,88 +58,60 @@ export function carregarHistorico() {
         </button>
 
         ${
-  item.imagem
-    ? `
-      <img
-        src="${item.imagem}"
-        class="historico-img"
-      >
+          item.imagem
+            ? `
+              <img
+                src="${item.imagem}"
+                class="historico-img"
+                onerror="this.style.display='none'"
+              >
 
-      <a
-        href="${item.imagem}"
-        download="post-ia.png"
-        class="download-historico-btn"
-      >
-        ⬇️ Baixar imagem
-      </a>
-    `
-    : ""
-}
+              <a
+                href="${item.imagem}"
+                download="post-ia.png"
+                class="download-historico-btn"
+              >
+                ⬇️ Baixar imagem
+              </a>
+            `
+            : ""
+        }
 
         <div class="data-post">
-          ${item.data}
+          ${new Date(item.created_at).toLocaleString()}
         </div>
 
       </div>
     `;
   });
 
-  const botoesCopiar =
-    document.querySelectorAll(
-      ".copiar-historico-btn"
-    );
-
-  botoesCopiar.forEach(botao => {
-
-    botao.addEventListener(
-      "click",
-      () => {
-
-        const index =
-          botao.dataset.index;
-
-        copiarHistorico(index);
-      }
-    );
-  });
+  document
+    .querySelectorAll(".copiar-historico-btn")
+    .forEach(botao => {
+      botao.addEventListener("click", () => {
+        copiarHistorico(botao.dataset.index);
+      });
+    });
 }
 
-export function limparHistorico() {
+export async function limparHistorico() {
+  await limparHistoricoAPI();
 
-  localStorage.removeItem("historico");
-
-  carregarHistorico();
-
+  await carregarHistorico();
   atualizarDashboard();
 
-  mostrarToast(
-    "🗑 Histórico apagado"
-  );
+  mostrarToast("🗑 Histórico apagado");
 }
 
 export function copiarHistorico(index) {
-
-  const historico =
-    JSON.parse(
-      localStorage.getItem("historico")
-    ) || [];
-
-  const item = historico[index];
+  const item = historicoAtual[index];
 
   if (!item) {
-
-    mostrarToast(
-      "Post não encontrado"
-    );
-
+    mostrarToast("Post não encontrado");
     return;
   }
 
-  navigator.clipboard.writeText(
-    item.texto
-  );
+  navigator.clipboard.writeText(item.texto);
 
-  mostrarToast(
-    "📋 Post copiado"
-  );
+  mostrarToast("📋 Post copiado");
 }

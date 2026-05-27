@@ -167,7 +167,7 @@ async function gerarConteudo() {
 
     ultimoTexto = data.texto;
 
- salvarHistorico(
+ await salvarHistorico(
   data.texto,
   data.imagem || null
 );
@@ -280,8 +280,20 @@ async function fazerLogin() {
 
     mostrarToast("Login realizado ✅");
 
-    await verificarAuth();
-    await carregarPerfil();
+const usuario =
+  await pegarUsuarioAtual();
+
+if (usuario) {
+  localStorage.setItem(
+    "user_id",
+    usuario.id
+  );
+}
+
+await verificarAuth();
+await carregarPerfil();
+carregarHistorico();
+
   } catch (err) {
     console.log(err);
     mostrarToast("Erro ao entrar");
@@ -312,8 +324,20 @@ async function fazerCadastro() {
 
     mostrarToast("Conta criada ✅");
 
-    await verificarAuth();
-    await carregarPerfil();
+const usuario =
+  await pegarUsuarioAtual();
+
+if (usuario) {
+  localStorage.setItem(
+    "user_id",
+    usuario.id
+  );
+}
+
+await verificarAuth();
+await carregarPerfil();
+carregarHistorico();
+
   } catch (err) {
     console.log(err);
     mostrarToast("Erro ao criar conta");
@@ -323,6 +347,7 @@ async function fazerCadastro() {
 }
 
 async function fazerLogout() {
+  localStorage.removeItem("user_id");
   await sairUsuario();
 
   mostrarToast("Você saiu da conta");

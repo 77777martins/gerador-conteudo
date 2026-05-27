@@ -75,3 +75,51 @@ export async function pegarPerfil() {
 
   return response.json();
 }
+export async function buscarHistorico() {
+  const {
+    data: { session }
+  } = await supabaseClient.auth.getSession();
+
+  const response = await fetch(`${API_URL}/historico`, {
+    headers: {
+      Authorization: `Bearer ${session?.access_token}`
+    }
+  });
+
+  return response.json();
+}
+
+export async function salvarHistoricoAPI(texto, imagem) {
+  const {
+    data: { session }
+  } = await supabaseClient.auth.getSession();
+
+  const response = await fetch(`${API_URL}/historico`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${session?.access_token}`
+    },
+    body: JSON.stringify({
+      texto,
+      imagem
+    })
+  });
+
+  return response.json();
+}
+
+export async function limparHistoricoAPI() {
+  const {
+    data: { session }
+  } = await supabaseClient.auth.getSession();
+
+  const response = await fetch(`${API_URL}/historico`, {
+    method: "DELETE",
+    headers: {
+      Authorization: `Bearer ${session?.access_token}`
+    }
+  });
+
+  return response.json();
+}

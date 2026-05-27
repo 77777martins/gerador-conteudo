@@ -1,10 +1,10 @@
 import { API_URL } from "./config.js";
 
 const SUPABASE_URL =
-  "https://slaykhadfnaevshsnmqc.supabase.co";
+  "https://pwffqajfzyhewcannguz.supabase.co";
 
 const SUPABASE_ANON_KEY =
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNsYXlraGFkZm5hZXZzaHNubXFjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgzNTg0NDIsImV4cCI6MjA5MzkzNDQ0Mn0.dk0IJAqlcIJico1abUUL4yHt6XEXkzVuEO4CDiJSSNM";
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB3ZmZxYWpmenloZXdjYW5uZ3V6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk5MTA5MzIsImV4cCI6MjA5NTQ4NjkzMn0.SsGyAv7PNuM_pPd_WkITJGd1sPQZ6M9gz-LYXlnzRmA";
 
 export const supabaseClient =
   window.supabase.createClient(
