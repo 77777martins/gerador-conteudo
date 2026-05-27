@@ -181,6 +181,46 @@ app.get(
   }
 );
 
+function esperar(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+async function rodarReplicateComRetry(modelo, input, tentativas = 3) {
+  for (let tentativa = 1; tentativa <= tentativas; tentativa++) {
+    try {
+      return await replicate.run(modelo, {
+        input
+      });
+    } catch (err) {
+      const status = err?.response?.status || err?.status;
+      const retryAfter =
+        Number(err?.response?.headers?.get?.("retry-after")) || 5;
+
+      if (status === 429 && tentativa < tentativas) {
+        console.log(
+          `Rate limit Replicate. Tentando novamente em ${retryAfter}s...`
+        );
+
+        await esperar(retryAfter * 1000);
+        continue;
+      }
+
+      throw err;
+    }
+  }
+}
+
+const CONFIG = {
+  outputSize: 1024,
+  productScale: 0.62,
+  shadowOpacity: 0.35,
+  shadowBlur: 28,
+  shadowOffsetY: 32,
+  backgroundBlur: 0.4,
+  finalSharpen: true
+};
+
+
 app.post(
   "/gerar",
   gerarLimiter,
@@ -222,6 +262,11 @@ app.post(
       let texto = "";
       let imagemGerada = null;
       let descricaoImagem = "";
+
+      console.log("CHECK IMAGEM:");
+console.log("Tem arquivo?", !!req.file);
+console.log("Plano:", profile.plan);
+console.log("USE_FAKE_AI:", process.env.USE_FAKE_AI);
 
       if (
         req.file &&
@@ -281,170 +326,144 @@ Be concise. Do not invent a brand if it is not visible.
         }
       }
 
-      if (
-        req.file &&
-        profile.plan === "pro" &&
-        process.env.USE_FAKE_AI !== "true"
-      ) {
-        try {
-          console.log("INICIANDO PIPELINE PRODUTO + FUNDO ✅");
+    if (
+  req.file &&
+  profile.plan === "pro" &&
+  process.env.USE_FAKE_AI !== "true"
+) {
+  try {
+    console.log("PIPELINE FLUX KONTEXT NATURAL ✅");
 
-          const produtoOriginalBuffer =
-            await sharp(req.file.buffer)
-              .resize(900, 900, {
-                fit: "inside",
-                withoutEnlargement: true
-              })
-              .png()
-              .toBuffer();
-
-          const produtoBase64 =
-            `data:image/png;base64,${produtoOriginalBuffer.toString("base64")}`;
-
-          const produtoSemFundoOutput =
-            await replicate.run(
-              "851-labs/background-remover",
-              {
-                input: {
-                  image: produtoBase64
-                }
-              }
-            );
-
-          const produtoSemFundoUrl =
-            Array.isArray(produtoSemFundoOutput)
-              ? produtoSemFundoOutput[0]
-              : produtoSemFundoOutput;
-
-          if (!produtoSemFundoUrl) {
-            throw new Error("Não foi possível remover o fundo do produto.");
+    const imagemBaseBuffer =
+      await sharp(req.file.buffer)
+        .resize(1024, 1024, {
+          fit: "inside",
+          withoutEnlargement: true,
+          background: {
+            r: 255,
+            g: 255,
+            b: 255,
+            alpha: 1
           }
+        })
+        .png()
+        .toBuffer();
 
-          console.log("FUNDO DO PRODUTO REMOVIDO ✅");
+    const imagemBase64 =
+      `data:image/png;base64,${imagemBaseBuffer.toString("base64")}`;
 
-          const backgroundOutput =
-            await replicate.run(
-              "black-forest-labs/flux-schnell",
-              {
-                input: {
-                  prompt: `
-Create ONLY a premium advertising background for an Instagram product post.
+    const output =
+      await rodarReplicateComRetry(
+        "black-forest-labs/flux-kontext-pro",
+        {
+          input_image: imagemBase64,
 
-VERY IMPORTANT:
-- Do NOT create any product
-- Do NOT create bottles
-- Do NOT create packages
-- Do NOT create logos
-- Do NOT create food items
-- Background only
-- Leave clear space in the center for the real product
+          prompt: `
+Keep the product EXACTLY identical.
+
+Do NOT modify:
+- product shape
+- logo
+- brand
+- colors
+- texture
+- proportions
+- label
+- packaging
+- visible text on the product
+
+Create a realistic premium scene around the original product.
+
+The product must appear naturally placed in the environment with:
+- matching shadows
+- realistic reflections
+- cinematic lighting
+- professional advertising photography
+- natural depth of field
+- realistic perspective
 
 Style:
-- premium commercial background
-- cinematic lighting
-- realistic shadows
-- clean social media ad design
-- attractive marketing scene
-- modern Instagram advertising
+modern ecommerce product photography,
+ultra realistic,
+high-end commercial ad,
+premium Instagram advertising.
 
-Theme:
+User theme:
 ${tema}
+
+Very important:
+The product must remain the same real product from the uploaded image.
+Only improve the scene, lighting, background, shadows and commercial presentation.
 `,
-                  width: 1024,
-                  height: 1024,
-                  num_outputs: 1
-                }
-              }
-            );
 
-          const backgroundUrl =
-            Array.isArray(backgroundOutput)
-              ? backgroundOutput[0]
-              : backgroundOutput;
-
-          if (!backgroundUrl) {
-            throw new Error("Não foi possível gerar o fundo.");
-          }
-
-          console.log("BACKGROUND GERADO ✅");
-
-          const backgroundResponse =
-            await fetch(backgroundUrl);
-
-          if (!backgroundResponse.ok) {
-            throw new Error("Erro ao baixar o background gerado.");
-          }
-
-          const backgroundBuffer =
-            Buffer.from(
-              await backgroundResponse.arrayBuffer()
-            );
-
-          const produtoResponse =
-            await fetch(produtoSemFundoUrl);
-
-          if (!produtoResponse.ok) {
-            throw new Error("Erro ao baixar produto sem fundo.");
-          }
-
-          const produtoSemFundoBuffer =
-            Buffer.from(
-              await produtoResponse.arrayBuffer()
-            );
-
-          const produtoFinalBuffer =
-            await sharp(produtoSemFundoBuffer)
-              .resize(650, 650, {
-                fit: "inside",
-                withoutEnlargement: true
-              })
-              .png()
-              .toBuffer();
-
-          const arteFinalBuffer =
-            await sharp(backgroundBuffer)
-              .resize(1024, 1024)
-              .composite([
-                {
-                  input: produtoFinalBuffer,
-                  gravity: "center"
-                }
-              ])
-              .png()
-              .toBuffer();
-
-          const nomeArquivo =
-            `post-${Date.now()}.png`;
-
-          const { error: uploadError } =
-            await supabase.storage
-              .from("posts")
-              .upload(
-                nomeArquivo,
-                arteFinalBuffer,
-                {
-                  contentType: "image/png"
-                }
-              );
-
-          if (uploadError) {
-            throw uploadError;
-          }
-
-          const { data: publicUrlData } =
-            supabase.storage
-              .from("posts")
-              .getPublicUrl(nomeArquivo);
-
-          imagemGerada =
-            publicUrlData.publicUrl;
-
-          console.log("ARTE FINAL COM PRODUTO ORIGINAL ✅");
-        } catch (imgErr) {
-          console.log("ERRO IMAGEM IA:");
-          console.log(imgErr);
+          guidance: 3.5,
+          aspect_ratio: "match_input_image",
+          output_format: "png",
+          output_quality: 92
         }
-      }
+      );
+
+    const imagemFinalRaw =
+      Array.isArray(output)
+        ? output[0]
+        : output;
+
+    const imagemFinalUrl =
+      typeof imagemFinalRaw === "string"
+        ? imagemFinalRaw
+        : imagemFinalRaw?.url
+          ? imagemFinalRaw.url()
+          : null;
+
+    if (!imagemFinalUrl) {
+      throw new Error("A Replicate não retornou URL da imagem.");
+    }
+
+    const imagemFinalResponse =
+      await fetch(imagemFinalUrl);
+
+    if (!imagemFinalResponse.ok) {
+      throw new Error("Erro ao baixar imagem final da Replicate.");
+    }
+
+    const imagemFinalBuffer =
+      Buffer.from(
+        await imagemFinalResponse.arrayBuffer()
+      );
+
+    const nomeArquivo =
+      `post-${Date.now()}.png`;
+
+    const { error: uploadError } =
+      await supabase.storage
+        .from("posts")
+        .upload(
+          nomeArquivo,
+          imagemFinalBuffer,
+          {
+            contentType: "image/png"
+          }
+        );
+
+    if (uploadError) {
+      throw uploadError;
+    }
+
+    const { data: publicUrlData } =
+      supabase.storage
+        .from("posts")
+        .getPublicUrl(nomeArquivo);
+
+    imagemGerada =
+      publicUrlData.publicUrl;
+
+    console.log("IMAGEM NATURAL GERADA COM KONTEXT ✅");
+
+  } catch (imgErr) {
+    console.log("ERRO IMAGEM IA:");
+    console.log(imgErr);
+  }
+}
 
       if (process.env.USE_FAKE_AI === "true") {
         texto = `🔥 ${tema}
