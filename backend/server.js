@@ -556,6 +556,68 @@ Rules:
   }
 );
 
+app.get(
+  "/historico",
+  autenticarUsuario,
+  async (req, res) => {
+    const { data, error } = await supabase
+      .from("post_history")
+      .select("*")
+      .eq("user_id", req.user.id)
+      .order("created_at", { ascending: false })
+      .limit(20);
+
+    if (error) {
+      return res.status(500).json({ error: "Erro ao buscar histórico." });
+    }
+
+    return res.json(data);
+  }
+);
+
+app.post(
+  "/historico",
+  autenticarUsuario,
+  async (req, res) => {
+    const { texto, imagem } = req.body;
+
+    if (!texto) {
+      return res.status(400).json({ error: "Texto obrigatório." });
+    }
+
+    const { error } = await supabase
+      .from("post_history")
+      .insert({
+        user_id: req.user.id,
+        texto,
+        imagem: imagem || null
+      });
+
+    if (error) {
+      return res.status(500).json({ error: "Erro ao salvar histórico." });
+    }
+
+    return res.json({ success: true });
+  }
+);
+
+app.delete(
+  "/historico",
+  autenticarUsuario,
+  async (req, res) => {
+    const { error } = await supabase
+      .from("post_history")
+      .delete()
+      .eq("user_id", req.user.id);
+
+    if (error) {
+      return res.status(500).json({ error: "Erro ao limpar histórico." });
+    }
+
+    return res.json({ success: true });
+  }
+);
+
 app.post(
   "/pagamento",
   pagamentoLimiter,
@@ -637,6 +699,14 @@ app.post("/webhook", async (req, res) => {
     switch (event.type) {
       case "checkout.session.completed": {
         const session = event.data.object;
+
+        if (
+  event.livemode === false &&
+  process.env.ALLOW_TEST_PAYMENTS !== "true"
+) {
+  console.log("Pagamento teste ignorado. PRO não ativado.");
+  break;
+}
 
         const userId = session.metadata?.userId;
         const customerId = session.customer;
