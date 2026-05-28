@@ -65,7 +65,7 @@ async function verificarAuth() {
 
 async function iniciarApp() {
   carregarHistorico();
-  atualizarDashboard();
+  await atualizarDashboard();
   iniciarUpload();
 
   const usuario = await verificarAuth();
