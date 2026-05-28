@@ -358,7 +358,7 @@ Be concise. Do not invent a brand if it is not visible.
         {
           input_image: imagemBase64,
 
-          prompt: `
+         prompt: `
 Keep the product EXACTLY identical.
 
 Do NOT modify:
@@ -372,31 +372,31 @@ Do NOT modify:
 - packaging
 - visible text on the product
 
-Create a realistic premium scene around the original product.
+Create a NEW realistic premium advertising scene based on this user theme:
 
-The product must appear naturally placed in the environment with:
-- matching shadows
-- realistic reflections
-- cinematic lighting
-- professional advertising photography
-- natural depth of field
-- realistic perspective
-
-Style:
-modern ecommerce product photography,
-ultra realistic,
-high-end commercial ad,
-premium Instagram advertising.
-
-User theme:
 ${tema}
 
-Very important:
-The product must remain the same real product from the uploaded image.
-Only improve the scene, lighting, background, shadows and commercial presentation.
+The background must strongly follow the user theme.
+Avoid generic studio backgrounds.
+
+Scene requirements:
+- realistic location/environment related to the theme
+- premium ecommerce advertising look
+- cinematic lighting
+- natural shadows
+- realistic reflections
+- depth of field
+- professional Instagram ad style
+- make the product the main focus
+- no duplicated product
+- no extra logos
+- no text/watermark
+
+The product must look naturally placed in the scene.
+Only transform the environment, lighting, shadows and commercial presentation.
 `,
 
-          guidance: 3.5,
+          guidance: 4.5,
           aspect_ratio: "match_input_image",
           output_format: "png",
           output_quality: 92
