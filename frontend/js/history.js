@@ -43,13 +43,13 @@ export async function carregarHistorico() {
   historicoDiv.innerHTML = "";
 
   if (historicoAtual.length === 0) {
-    historicoDiv.innerHTML = `
-      <div class="historico-item">
-        <p>Nenhum post gerado ainda.</p>
-      </div>
-    `;
-    return;
-  }
+  historicoDiv.innerHTML = `
+    <div class="historico-item">
+      <p>Nenhum post gerado ainda.</p>
+    </div>
+  `;
+  return historicoAtual;
+}
 
   historicoAtual.forEach((item, index) => {
     historicoDiv.innerHTML += `
@@ -92,13 +92,15 @@ export async function carregarHistorico() {
     `;
   });
 
-  document
-    .querySelectorAll(".copiar-historico-btn")
-    .forEach(botao => {
-      botao.addEventListener("click", () => {
-        copiarHistorico(botao.dataset.index);
-      });
+ document
+  .querySelectorAll(".copiar-historico-btn")
+  .forEach(botao => {
+    botao.addEventListener("click", () => {
+      copiarHistorico(botao.dataset.index);
     });
+  });
+
+return historicoAtual;
 }
 
 export async function limparHistorico() {
