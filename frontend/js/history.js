@@ -17,8 +17,12 @@ export async function salvarHistorico(texto, imagem) {
       : null
   );
 
+  const historicoAtualizado =
   await carregarHistorico();
-  atualizarDashboard();
+
+await atualizarDashboard(
+  historicoAtualizado
+);
 }
 
 export async function carregarHistorico() {
@@ -31,6 +35,9 @@ export async function carregarHistorico() {
 
   if (!Array.isArray(historicoAtual)) {
     historicoAtual = [];
+
+    return historicoAtual;
+  
   }
 
   historicoDiv.innerHTML = "";
@@ -98,7 +105,7 @@ export async function limparHistorico() {
   await limparHistoricoAPI();
 
   await carregarHistorico();
-  atualizarDashboard();
+  await atualizarDashboard();
 
   mostrarToast("🗑 Histórico apagado");
 }

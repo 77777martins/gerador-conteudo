@@ -1,6 +1,9 @@
 import { buscarHistorico } from "./api.js";
 
-export async function atualizarDashboard() {
+export async function atualizarDashboard(
+  historicoRecebido = null
+) {
+
   const postsGerados =
     document.getElementById("postsGerados");
 
@@ -10,24 +13,45 @@ export async function atualizarDashboard() {
   const iaStatus =
     document.getElementById("iaStatus");
 
-  const historico = await buscarHistorico();
+  try {
 
-  console.log("HISTÓRICO DASHBOARD:", historico);
+    const historico =
+      historicoRecebido ||
+      await buscarHistorico();
 
-  const lista = Array.isArray(historico)
-    ? historico
-    : [];
+    const lista =
+      Array.isArray(historico)
+        ? historico
+        : [];
 
-  if (postsGerados) {
-    postsGerados.textContent = lista.length;
-  }
+    const totalPosts =
+      lista.length;
 
-  if (uploadsGerados) {
-    uploadsGerados.textContent =
-      lista.filter(item => item.imagem).length;
-  }
+    const totalUploads =
+      lista.filter(
+        item => item.imagem
+      ).length;
 
-  if (iaStatus) {
-    iaStatus.textContent = "ONLINE";
+    if (postsGerados) {
+      postsGerados.textContent =
+        totalPosts;
+    }
+
+    if (uploadsGerados) {
+      uploadsGerados.textContent =
+        totalUploads;
+    }
+
+    if (iaStatus) {
+      iaStatus.textContent =
+        "ONLINE";
+    }
+
+  } catch (err) {
+
+    console.log(
+      "ERRO DASHBOARD:",
+      err
+    );
   }
 }
