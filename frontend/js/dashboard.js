@@ -1,10 +1,22 @@
 export function atualizarDashboard() {
-  const historico =
-    JSON.parse(localStorage.getItem("historico")) || [];
+  const postsGerados =
+    document.getElementById("postsGerados");
 
-  document.getElementById("totalPosts").innerText =
-    historico.length;
+  const uploadsGerados =
+    document.getElementById("uploadsGerados");
 
-  document.getElementById("totalUploads").innerText =
-    historico.filter(item => item.imagem).length;
+  const iaStatus =
+    document.getElementById("iaStatus");
+
+  if (postsGerados) {
+    postsGerados.textContent = "0";
+  }
+
+  if (uploadsGerados) {
+    uploadsGerados.textContent = "0";
+  }
+
+  if (iaStatus) {
+    iaStatus.textContent = "ONLINE";
+  }
 }
