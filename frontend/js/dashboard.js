@@ -1,4 +1,7 @@
-export function atualizarDashboard() {
+import { buscarHistorico } from "./api.js";
+
+export async function atualizarDashboard() {
+
   const postsGerados =
     document.getElementById("postsGerados");
 
@@ -8,15 +11,43 @@ export function atualizarDashboard() {
   const iaStatus =
     document.getElementById("iaStatus");
 
-  if (postsGerados) {
-    postsGerados.textContent = "0";
-  }
+  try {
 
-  if (uploadsGerados) {
-    uploadsGerados.textContent = "0";
-  }
+    const historico =
+      await buscarHistorico();
 
-  if (iaStatus) {
-    iaStatus.textContent = "ONLINE";
+    const totalPosts =
+      Array.isArray(historico)
+        ? historico.length
+        : 0;
+
+    const totalUploads =
+      Array.isArray(historico)
+        ? historico.filter(
+            item => item.imagem
+          ).length
+        : 0;
+
+    if (postsGerados) {
+      postsGerados.textContent =
+        totalPosts;
+    }
+
+    if (uploadsGerados) {
+      uploadsGerados.textContent =
+        totalUploads;
+    }
+
+    if (iaStatus) {
+      iaStatus.textContent =
+        "ONLINE";
+    }
+
+  } catch (err) {
+
+    console.log(
+      "Erro dashboard:",
+      err
+    );
   }
 }
