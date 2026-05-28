@@ -64,14 +64,16 @@ async function verificarAuth() {
 }
 
 async function iniciarApp() {
-  carregarHistorico();
-  await atualizarDashboard();
   iniciarUpload();
 
   const usuario = await verificarAuth();
 
   if (usuario) {
+    localStorage.setItem("user_id", usuario.id);
+
     await carregarPerfil();
+    await carregarHistorico();
+    await atualizarDashboard();
   }
 
   const params = new URLSearchParams(window.location.search);

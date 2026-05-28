@@ -5,10 +5,10 @@ export async function atualizarDashboard(
 ) {
 
   const postsGerados =
-    document.getElementById("postsGerados");
+    document.getElementById("totalPosts");
 
   const uploadsGerados =
-    document.getElementById("uploadsGerados");
+    document.getElementById("totalUploads");
 
   const iaStatus =
     document.getElementById("iaStatus");
