@@ -220,6 +220,69 @@ const CONFIG = {
   finalSharpen: true
 };
 
+async function gerarPromptCenario(textoUsuario) {
+  const resposta = await openai.chat.completions.create({
+    model: "gpt-4o-mini",
+
+    messages: [
+      {
+        role: "system",
+        content: `
+You are an expert scene interpreter for AI product photography.
+
+The uploaded product already exists and must not be recreated.
+
+Your job is to transform the user's idea into a clear visual environment prompt.
+
+Rules:
+- Understand the user's intention, mood, location, colors, style and atmosphere.
+- Keep the user's creative idea.
+- Do not remove important scene details.
+- If the user mentions a product, treat it as the uploaded product and remove it from the environment description.
+- If the user mentions a brand, convert it into visual style, color palette, atmosphere and lifestyle, without logos or trademarks.
+Do not generate text, labels, watermarks or extra products.
+
+Decorative background elements requested by the user must be preserved.
+
+Animals, drawings, icons, scenery objects and visual symbols are allowed when they are part of the environment.
+- Return only the environment/background description in English.
+- Make it specific, visual, realistic and cinematic.
+
+Examples:
+
+Input:
+"quero um iphone em cima de uma mesa gamer azul"
+Output:
+"modern blue RGB gaming desk, neon lighting, premium gaming setup, dark futuristic room, realistic reflections, cinematic tech atmosphere"
+
+Input:
+"quero um fundo da lacoste"
+Output:
+"elegant sporty premium fashion environment, green and white color palette, clean tennis club atmosphere, luxury lifestyle photography, refined minimal background"
+
+Input:
+"quero um hambúrguer em restaurante chique"
+Output:
+"luxury gourmet restaurant environment, warm ambient lighting, wooden table, elegant background, shallow depth of field, premium food photography mood"
+
+Input:
+"quero algo chamativo para vender no instagram"
+Output:
+"bold premium social media advertising background, vibrant but realistic lighting, clean commercial composition, high contrast, modern ecommerce atmosphere"
+`
+      },
+      {
+        role: "user",
+        content: textoUsuario
+      }
+    ],
+
+    temperature: 0.8,
+    max_tokens: 140
+  });
+
+  return resposta.choices?.[0]?.message?.content?.trim();
+}
 
 app.post(
   "/gerar",
@@ -230,6 +293,21 @@ app.post(
     try {
       const userId = req.user.id;
       const tema = req.body.tema?.trim();
+      const promptCenario =
+  await gerarPromptCenario(tema);
+
+  console.log("\n====================");
+console.log("TEMA ORIGINAL:");
+console.log(tema);
+
+console.log("\nPROMPT CENARIO:");
+console.log(promptCenario);
+console.log("====================\n");
+
+console.log(
+  "CENARIO IA:",
+  promptCenario
+);
 
       if (!tema) {
         return res.status(400).json({
@@ -357,46 +435,97 @@ Be concise. Do not invent a brand if it is not visible.
         "black-forest-labs/flux-kontext-pro",
         {
           input_image: imagemBase64,
+ 
+          prompt: `
+The uploaded image contains the ONLY real product.
 
-         prompt: `
-Keep the product EXACTLY identical.
+The user may describe the product by mistake.
+Ignore product words from the user request.
+Use the user request ONLY as the desired environment/background.
 
-Do NOT modify:
-- product shape
-- logo
-- brand
-- colors
-- texture
-- proportions
-- label
-- packaging
-- visible text on the product
+USER ENVIRONMENT REQUEST:
+"${promptCenario}"
 
-Create a NEW realistic premium advertising scene based on this user theme:
+TASK:
 
-${tema}
+Completely replace the current environment.
 
-The background must strongly follow the user theme.
-Avoid generic studio backgrounds.
+The original background must be removed and rebuilt according to the requested scene.
 
-Scene requirements:
-- realistic location/environment related to the theme
-- premium ecommerce advertising look
-- cinematic lighting
-- natural shadows
-- realistic reflections
+Keep ONLY the uploaded product.
+
+Everything around the product may be reconstructed to match the requested environment.
+
+The final image must look like the product was photographed originally in that environment.
+
+IMPORTANT SCENE RULES:
+
+Follow the user's scene request literally.
+
+If the user requests:
+- animals
+- drawings
+- icons
+- decorative symbols
+- objects
+- scenery elements
+
+they must appear clearly in the generated background.
+
+Decorative elements are allowed in the background.
+
+Do not remove requested background elements.
+
+Never place decorative elements over the product.
+
+The product remains the main subject.
+
+CRITICAL PRODUCT RULES:
+- Keep the uploaded product EXACTLY identical
+- Do NOT create another product
+- Do NOT duplicate the product
+- Do NOT redesign the product
+- Do NOT change the product shape
+- Do NOT change logo
+- Do NOT change brand
+- Do NOT change colors
+- Do NOT change texture
+- Do NOT change proportions
+- Do NOT change packaging
+- Do NOT change visible text on the product
+
+REBUILD:
+- background
+- environment
+- furniture
+- surfaces
+- scenery
+- atmosphere
+- lighting
+- shadows
+- reflections
 - depth of field
-- professional Instagram ad style
-- make the product the main focus
-- no duplicated product
-- no extra logos
-- no text/watermark
 
-The product must look naturally placed in the scene.
-Only transform the environment, lighting, shadows and commercial presentation.
+PRESERVE ONLY:
+- the uploaded product
+
+The final result must look like a real professional product photo.
+
+Style:
+ultra realistic ecommerce photography,
+premium Instagram advertisement,
+cinematic lighting,
+natural shadows,
+realistic reflections,
+high-end commercial photo.
+
+IMPORTANT SCENE REQUEST:
+Follow the user environment request literally when it describes background colors, animals, drawings, objects, places or decorative elements.
+
+The requested background elements must appear clearly, but only in the background.
 `,
 
-          guidance: 4.5,
+          guidance: 6,
           aspect_ratio: "match_input_image",
           output_format: "png",
           output_quality: 92
