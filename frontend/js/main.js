@@ -103,6 +103,45 @@ async function iniciarApp() {
   }
 }
 
+function iniciarLoadingPremium() {
+  const etapas = [
+    "🤖 Interpretando seu pedido...",
+    "🎨 Criando cenário profissional...",
+    "📸 Integrando produto ao ambiente...",
+    "✨ Ajustando iluminação e sombras...",
+    "🚀 Finalizando conteúdo..."
+  ];
+
+  let etapaAtual = 0;
+
+  const intervalo = setInterval(() => {
+    const textoEtapa =
+      document.getElementById("loadingEtapa");
+
+    const barra =
+      document.getElementById("loadingBarra");
+
+    if (!textoEtapa || !barra) {
+      clearInterval(intervalo);
+      return;
+    }
+
+    etapaAtual =
+      Math.min(etapaAtual + 1, etapas.length - 1);
+
+    textoEtapa.textContent =
+      etapas[etapaAtual];
+
+    barra.style.width =
+      `${((etapaAtual + 1) / etapas.length) * 100}%`;
+
+    if (etapaAtual === etapas.length - 1) {
+      clearInterval(intervalo);
+    }
+  }, 2200);
+
+  return intervalo;
+}
 async function gerarConteudo() {
   const gerarBtn = document.getElementById("gerarBtn");
   const tema = document.getElementById("tema").value.trim();
@@ -125,18 +164,25 @@ async function gerarConteudo() {
   `;
 
   resultado.innerHTML = `
-    <div class="ai-loading">
-      <div class="ai-loader"></div>
+  <div class="ai-loading premium-loading">
+    <div class="ai-loader"></div>
 
-      <h3>
-        🤖 IA criando conteúdo...
-      </h3>
+    <h3 id="loadingEtapa">
+      🤖 Interpretando seu pedido...
+    </h3>
 
-      <p>
-        Gerando estratégia, copy e marketing.
-      </p>
+    <p>
+      A IA está criando uma imagem profissional com base no seu produto.
+    </p>
+
+    <div class="loading-progress">
+      <div id="loadingBarra" class="loading-progress-bar"></div>
     </div>
-  `;
+  </div>
+`;
+
+const loadingInterval =
+  iniciarLoadingPremium();
 
   try {
     const formData = new FormData();
@@ -230,6 +276,7 @@ async function gerarConteudo() {
       </div>
     `;
   } finally {
+    clearInterval(loadingInterval);
     gerarBtn.disabled = false;
     gerarBtn.innerHTML = "✨ Gerar Conteúdo";
   }
