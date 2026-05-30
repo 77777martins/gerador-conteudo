@@ -241,7 +241,7 @@ Input:
 Output:
 {
   "environmentPrompt": "premium football stadium environment, blue and white color palette, bright stadium lights, pitch grass, energetic fan atmosphere, confetti, professional sports advertising photography",
-  "decorativeElements": "generic cheerful football mascot character inspired by Argentina colors in the background, decorative only, not covering the product",
+  "decorativeElements":"small football mascot illustration in the distant stadium background"
   "editInstructions": "remove promotional text, price tags, banners, watermarks and graphic overlays, keep only the uploaded product as the main subject"
 }
 
@@ -502,6 +502,18 @@ The scene must feel like a professional football advertisement.
 
 If a mascot is requested, place it as a background decorative character.
 Never cover or alter the uploaded product.
+
+Decorative elements must remain secondary.
+
+The uploaded product is always the main subject.
+
+Mascots, characters, animals, icons and symbols must appear as background elements only.
+
+Do not place mascots behind the product center.
+
+Prefer side positions, stadium banners, walls, screens or distant background placement.
+
+The mascot must never become larger than the product.
 
 EDIT INSTRUCTIONS:
 "${instrucoesEdicao}"
