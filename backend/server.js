@@ -386,6 +386,10 @@ const promptCenario =
 const elementosDecorativos =
   pedidoImagem.decorativeElements || "";
 
+  console.log("PROMPT CENARIO:", promptCenario);
+console.log("ELEMENTOS DECORATIVOS:", elementosDecorativos);
+console.log("INSTRUCOES EDICAO:", instrucoesEdicao);
+
 const instrucoesEdicao =
   pedidoImagem.editInstructions || "";
 
@@ -552,6 +556,7 @@ The scene must feel like a professional football advertisement.
           input_image: imagemBase64,
  
           prompt: `
+          
 The uploaded image contains the ONLY real product.
 
 The user may describe the product by mistake.
@@ -561,13 +566,26 @@ Use the user request ONLY as the desired environment/background.
 USER ENVIRONMENT REQUEST:
 "${promptCenario}"
 
-USER ENVIRONMENT REQUEST:
-"${promptCenario}"
+BRAND SAFETY RULES:
+
+Do not create unrelated brand names, logos, signs or readable text.
+
+Only use brands explicitly requested by the user.
+
+If the user asks for Redmi, do not create Honda, BMW, Apple, Nike or any unrelated brand.
+
+If the user asks for Honda, do not create Xiaomi, Redmi, Apple or unrelated brands.
+
+If the user asks for BMW, do not create Honda, Apple, Xiaomi or unrelated brands.
+
+Avoid random store names, banners, labels, logos or readable text.
+
+The background must not contain random brand text.
 
 DECORATIVE BACKGROUND ELEMENTS:
 "${elementosDecorativos}"
 
-${regrasFutebol} 
+${regrasFutebol}
 
 Decorative elements must appear ONLY when DECORATIVE BACKGROUND ELEMENTS is not empty.
 
