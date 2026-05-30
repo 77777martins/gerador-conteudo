@@ -1363,3 +1363,187 @@ input[type="file"] {
     font-size: 28px;
   }
 }
+/* =========================
+   APP MOBILE PREMIUM V2
+========================= */
+
+@media (max-width: 768px) {
+  body {
+    background: #080817;
+  }
+
+  .container {
+    padding-bottom: 110px;
+  }
+
+  .hero-premium {
+    margin-top: 10px;
+    padding: 28px 20px;
+  }
+
+  .hero-badge {
+    font-size: 13px;
+    padding: 10px 14px;
+  }
+
+  .hero-content h1 {
+    font-size: 30px;
+    line-height: 1.08;
+    letter-spacing: -1px;
+  }
+
+  .hero-content p {
+    font-size: 15px;
+    opacity: 0.85;
+  }
+
+  .post-preview-card {
+    display: none;
+  }
+
+  .dashboard {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+
+  .dash-card {
+    padding: 16px;
+    min-height: 112px;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .dash-card span {
+    width: 48px;
+    height: 48px;
+    font-size: 22px;
+  }
+
+  .dash-card h3 {
+    font-size: 26px;
+    margin-top: 8px;
+  }
+
+  .dash-card p {
+    font-size: 13px;
+  }
+
+  .topo {
+    margin-top: 20px;
+  }
+
+  .logo {
+    display: none;
+  }
+
+  .plano {
+    position: sticky;
+    top: 10px;
+    z-index: 20;
+    backdrop-filter: blur(18px);
+    border-radius: 22px;
+  }
+
+  .card,
+  .resultado-card,
+  .historico-card {
+    margin-top: 18px;
+    padding: 22px;
+    border-radius: 28px;
+  }
+
+  .card label {
+    font-size: 16px;
+  }
+
+  #tema {
+    min-height: 56px;
+    border-radius: 18px;
+  }
+
+  .upload-box {
+    border-radius: 24px;
+    min-height: 190px;
+  }
+
+  #preview {
+    max-height: 220px;
+    object-fit: contain;
+  }
+
+  .resultado-card {
+    box-shadow: 0 24px 80px rgba(0, 0, 0, 0.35);
+  }
+
+  .resultado-header {
+    font-size: 15px;
+  }
+
+  #textoIA {
+    font-size: 18px;
+    line-height: 1.5;
+  }
+
+  .imagem-gerada,
+  .historico-img {
+    border-radius: 26px;
+    margin-top: 18px;
+  }
+
+  .download-btn,
+  .download-historico-btn {
+    width: 100%;
+    text-align: center;
+    border-radius: 18px;
+  }
+
+  .historico-card h2 {
+    font-size: 26px;
+    line-height: 1.1;
+  }
+
+  .historico-item {
+    padding: 18px;
+    border-radius: 24px;
+  }
+
+  .copiar-historico-btn {
+    width: 100%;
+    border-radius: 16px;
+  }
+
+  .pricing-section {
+    margin-top: 24px;
+  }
+
+  .pricing-grid {
+    gap: 18px;
+  }
+
+  .pricing-card {
+    border-radius: 28px;
+  }
+
+  .limpar-btn {
+    border-radius: 18px;
+  }
+}
+
+@media (max-width: 430px) {
+  .dashboard {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .dash-card {
+    min-height: 105px;
+  }
+
+  .hero-content h1 {
+    font-size: 28px;
+  }
+
+  .gerar-btn,
+  .pro-btn {
+    border-radius: 18px;
+  }
+}
