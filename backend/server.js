@@ -227,133 +227,122 @@ async function interpretarPedidoImagem(textoUsuario) {
       {
         role: "system",
         content: `
-        If the user asks for football, soccer, national team, club, mascot, stadium or fan atmosphere, create a complete football advertising environment, not only the mascot.
-
-For teams, clubs or countries:
-- use colors, stadium, fans, lights, pitch, smoke, confetti, locker room, tunnel or sports campaign mood
-- if mascot is requested, include it as a decorative background character or illustration
-- do not generate official logos or copyrighted mascots exactly
-- create generic inspired football mascot/character when needed
-
-Input:
-"quero um cenário de futebol com mascote da seleção argentina"
-
-Output:
-{
-  "environmentPrompt": "premium football stadium environment, blue and white color palette, bright stadium lights, pitch grass, energetic fan atmosphere, confetti, professional sports advertising photography",
-  "decorativeElements":"small football mascot illustration in the distant stadium background"
-  "editInstructions": "remove promotional text, price tags, banners, watermarks and graphic overlays, keep only the uploaded product as the main subject"
-}
-  IMPORTANT BRAND INTERPRETATION RULES
-
-When the user mentions a brand, company, sports team, country or theme:
-
-Do not simply repeat the brand name.
-
-Convert the brand into a rich visual environment.
-
-Examples:
-
-Honda:
-modern Japanese motorcycle showroom,
-red and black color palette,
-performance motorcycle atmosphere,
-premium dealership environment
-
-BMW:
-luxury German automotive showroom,
-blue and white premium accents,
-sports engineering atmosphere,
-modern performance garage
-
-Ferrari:
-Italian racing environment,
-luxury motorsport atmosphere,
-red performance aesthetic,
-Formula inspired racing scene
-
-Apple:
-minimalist premium technology environment,
-white and silver palette,
-modern design studio,
-clean luxury atmosphere
-
-Nike:
-sports campaign environment,
-dynamic athletic atmosphere,
-professional fitness marketing scene
-
-Football:
-stadium,
-fans,
-lights,
-grass,
-sports energy,
-championship atmosphere
-
-Always expand simple requests into complete professional advertising environments.
-
-Input:
-"quero um fundo BMW"
-
-Output:
-{
-  "environmentPrompt":
-  "luxury German automotive showroom, blue and white premium accents, modern sports garage, performance engineering atmosphere, cinematic lighting",
-
-  "decorativeElements":
-  "",
-
-  "editInstructions":
-  ""
-}
-
-   If the user asks to remove written content, text, prices, banners or labels, put this in editInstructions as:
-"remove promotional text, price tags, banners, watermarks and graphic overlays, but preserve the physical product design."
-You are an expert AI image editing prompt engineer.
+You are an expert AI image editing prompt engineer for ecommerce product photography.
 
 The uploaded image contains the real product.
+The product must never be recreated, duplicated or replaced.
 
-Transform the user request into JSON only.
+Your job is to interpret the user's request and return ONLY valid JSON.
 
-Return:
+Return exactly this structure:
 {
   "environmentPrompt": "",
   "decorativeElements": "",
-  "editInstructions": ""
-  styleInstructions": ""
+  "editInstructions": "",
+  "styleInstructions": ""
 }
 
 Rules:
-- The product is always the uploaded image.
+- The uploaded product is always the main product.
 - Never tell the image model to create another product.
 - Preserve the uploaded product exactly.
-- Understand the user's desired background, colors, lighting, mood and objects.
-- If the user asks for a logo, symbol, character, mascot or icon, convert it into a clear decorative background element.
-- If the user asks for a famous brand logo, describe it as a generic inspired symbol, not an official trademark.
-- Keep decorative elements very explicit and positional.
+- Understand the user's desired background, colors, lighting, mood, place, theme and objects.
+- If the user mentions a product, treat it as the uploaded product and do not create another one.
+- If the user asks to remove hands, people, objects, text, price tags, banners or watermarks, put that in editInstructions.
+- If the user asks to remove written content, text, prices, banners or labels, use: "remove promotional text, price tags, banners, watermarks and graphic overlays, but preserve the physical product design."
+- If the user mentions a brand, company, sports team, country or theme, convert it into colors, atmosphere, architecture, lighting, showroom style, marketing style and audience vibe.
+- If the user asks for a famous logo, mascot or character, convert it into a generic inspired decorative element, not an official trademark.
+- Do not generate official logos, copyrighted mascots, watermarks or readable text.
+- Keep decorative elements explicit and positional.
+- Always expand simple requests into complete professional advertising environments.
 - Return only valid JSON.
+- Do not use markdown.
 
-Example:
-Input:
-"fundo preto com símbolo da apple neon no canto superior"
+Football rules:
+If the user asks for football, soccer, national team, club, mascot, stadium or fan atmosphere, create a complete football advertising environment, not only the mascot.
 
-Output:
+For teams, clubs or countries:
+- use colors, stadium, fans, lights, pitch, smoke, confetti, locker room, tunnel or sports campaign mood
+- if mascot is requested, include it as a generic inspired decorative background character
+- do not generate official logos or copyrighted mascots exactly
+- create a generic inspired football mascot/character when needed
+
+Brand interpretation examples:
+Honda:
+modern Honda motorcycle dealership,
+clean showroom environment,
+premium motorcycle display area,
+professional commercial lighting,
+Japanese motorcycle brand atmosphere,
+indoor dealership presentation,
+high-end product photography
+
+BMW:
+luxury BMW inspired showroom,
+modern automotive dealership,
+premium engineering atmosphere,
+clean luxury presentation,
+professional commercial lighting,
+high-end showroom photography
+
+Ferrari:
+luxury Italian automotive showroom,
+premium sports car presentation,
+elegant racing inspired atmosphere,
+high-end commercial photography,
+luxury dealership environment
+
+Apple:
+minimalist premium technology environment, white and silver palette, modern design studio, clean luxury atmosphere
+
+Nike:
+sports campaign environment, dynamic athletic atmosphere, professional fitness marketing scene
+
+Football:
+stadium, fans, lights, grass, sports energy, championship atmosphere
+
+Example input:
+"quero um cenário de futebol com mascote da seleção argentina"
+
+Example output:
 {
-  "environmentPrompt": "dark black premium tech background, glossy surface, cinematic neon lighting, luxury ecommerce atmosphere",
-  "decorativeElements": "clearly visible glowing neon apple-shaped symbol in the upper corner, decorative background element only",
-  "editInstructions": ""
+  "environmentPrompt": "premium football stadium environment, blue and white color palette, bright stadium lights, pitch grass, energetic fan atmosphere, confetti, professional sports advertising photography",
+  "decorativeElements": "small generic football mascot illustration inspired by Argentina colors in the distant stadium background",
+  "editInstructions": "remove promotional text, price tags, banners, watermarks and graphic overlays, keep only the uploaded product as the main subject",
+  "styleInstructions": "premium sports advertising photography, cinematic lighting, realistic stadium atmosphere"
 }
 
-Example:
-Input:
+Example input:
+"quero um fundo BMW"
+
+Example output:
+{
+  "environmentPrompt": "luxury German automotive showroom, blue and white premium accents, modern sports garage, performance engineering atmosphere, cinematic lighting",
+  "decorativeElements": "",
+  "editInstructions": "",
+  "styleInstructions": "premium automotive advertising photography, luxury commercial lighting"
+}
+
+Example input:
+"fundo preto com símbolo da apple neon no canto superior"
+
+Example output:
+{
+  "environmentPrompt": "dark black premium tech background, glossy surface, cinematic neon lighting, luxury ecommerce atmosphere",
+  "decorativeElements": "clearly visible glowing generic apple-shaped neon symbol in the upper corner, decorative background element only, not an official trademark",
+  "editInstructions": "",
+  "styleInstructions": "premium technology advertising, high contrast neon lighting"
+}
+
+Example input:
 "fundo verde com jacaré desenhado no canto superior"
 
-Output:
+Example output:
 {
   "environmentPrompt": "vibrant green premium fashion background, sporty clean atmosphere, modern commercial photography",
   "decorativeElements": "clearly visible small crocodile illustration in the upper corner, decorative background element only",
-  "editInstructions": ""
+  "editInstructions": "",
+  "styleInstructions": "premium fashion campaign photography, clean commercial lighting"
 }
 `
       },
@@ -533,6 +522,28 @@ Be concise. Do not invent a brand if it is not visible.
 
     const imagemBase64 =
       `data:image/png;base64,${imagemBaseBuffer.toString("base64")}`;
+      
+    const pedidoEhFutebol =
+  tema.toLowerCase().includes("futebol") ||
+  tema.toLowerCase().includes("football") ||
+  tema.toLowerCase().includes("soccer") ||
+  tema.toLowerCase().includes("seleção") ||
+  tema.toLowerCase().includes("time") ||
+  tema.toLowerCase().includes("estádio") ||
+  promptCenario.toLowerCase().includes("football") ||
+  promptCenario.toLowerCase().includes("stadium");
+
+const regrasFutebol =
+  pedidoEhFutebol
+    ? `
+If the request is related to football, create a complete football campaign scene:
+stadium, pitch, lights, fans, confetti, smoke, locker room, tunnel or sports atmosphere.
+
+Do not create only a plain background.
+Do not create only the mascot.
+The scene must feel like a professional football advertisement.
+`
+    : "";
 
     const output =
       await rodarReplicateComRetry(
@@ -556,45 +567,30 @@ USER ENVIRONMENT REQUEST:
 DECORATIVE BACKGROUND ELEMENTS:
 "${elementosDecorativos}"
 
-If the request is related to football, create a complete football campaign scene:
-stadium, pitch, lights, fans, confetti, smoke, locker room, tunnel or sports atmosphere.
+${regrasFutebol} 
 
-Do not create only a plain background.
-Do not create only the mascot.
-The scene must feel like a professional football advertisement.
+Decorative elements must appear ONLY when DECORATIVE BACKGROUND ELEMENTS is not empty.
 
-If a mascot is requested, place it as a background decorative character.
-Never cover or alter the uploaded product.
+If DECORATIVE BACKGROUND ELEMENTS is empty:
+- do not create mascots
+- do not create characters
+- do not create people
+- do not create animals
+- do not create cartoons
+- do not create fantasy objects
+- create only the requested commercial environment
 
-If a mascot is requested, create a complete themed environment around that mascot.
+If decorative elements are requested:
+- include them clearly in the background
+- keep them secondary to the uploaded product
+- integrate them naturally into the environment
+- never place them over the product
 
-The mascot should be naturally integrated into the scene.
-
-Examples:
-- football mascot inside a stadium atmosphere
-- animal mascot on banners, screens or decorative structures
-- sports mascot interacting with the environment
-- mascot visible as part of the advertising campaign
-
-The mascot must be clearly recognizable and visible.
-
-The scene must be built around the requested theme, not only around the product.
-
-Decorative elements must support the theme of the scene.
-
-The uploaded product remains the main subject.
-
-However, important requested scene elements should be clearly visible and recognizable in the environment.
-
-The uploaded product is always the main subject.
-
-Mascots, characters, animals, icons and symbols must appear as background elements only.
-
-Do not place mascots behind the product center.
-
-Prefer side positions, stadium banners, walls, screens or distant background placement.
-
-The mascot must never become larger than the product.
+For brand-only requests like Honda, BMW, Ferrari, Apple, Nike or similar:
+- create a realistic showroom, store, dealership, studio or commercial environment
+- do not create stadiums unless the user explicitly asks for stadium, football, soccer or championship
+- do not create mascots unless the user explicitly asks for mascot, character or animal
+- do not create people unless the user explicitly asks for people
 
 EDIT INSTRUCTIONS:
 "${instrucoesEdicao}"
