@@ -220,55 +220,58 @@ const CONFIG = {
   finalSharpen: true
 };
 
-async function gerarPromptCenario(textoUsuario) {
+async function interpretarPedidoImagem(textoUsuario) {
   const resposta = await openai.chat.completions.create({
     model: "gpt-4o-mini",
-
     messages: [
       {
         role: "system",
         content: `
-You are an expert scene interpreter for AI product photography.
+You are an expert AI image editing prompt engineer.
 
-The uploaded product already exists and must not be recreated.
+The uploaded image contains the real product.
 
-Your job is to transform the user's idea into a clear visual environment prompt.
+Transform the user request into JSON only.
+
+Return:
+{
+  "environmentPrompt": "",
+  "decorativeElements": "",
+  "editInstructions": ""
+  styleInstructions": ""
+}
 
 Rules:
-- Understand the user's intention, mood, location, colors, style and atmosphere.
-- Keep the user's creative idea.
-- Do not remove important scene details.
-- If the user mentions a product, treat it as the uploaded product and remove it from the environment description.
-- If the user mentions a brand, convert it into visual style, color palette, atmosphere and lifestyle, without logos or trademarks.
-Do not generate text, labels, watermarks or extra products.
+- The product is always the uploaded image.
+- Never tell the image model to create another product.
+- Preserve the uploaded product exactly.
+- Understand the user's desired background, colors, lighting, mood and objects.
+- If the user asks for a logo, symbol, character, mascot or icon, convert it into a clear decorative background element.
+- If the user asks for a famous brand logo, describe it as a generic inspired symbol, not an official trademark.
+- Keep decorative elements very explicit and positional.
+- Return only valid JSON.
 
-Decorative background elements requested by the user must be preserved.
-
-Animals, drawings, icons, scenery objects and visual symbols are allowed when they are part of the environment.
-- Return only the environment/background description in English.
-- Make it specific, visual, realistic and cinematic.
-
-Examples:
-
+Example:
 Input:
-"quero um iphone em cima de uma mesa gamer azul"
-Output:
-"modern blue RGB gaming desk, neon lighting, premium gaming setup, dark futuristic room, realistic reflections, cinematic tech atmosphere"
+"fundo preto com símbolo da apple neon no canto superior"
 
-Input:
-"quero um fundo da lacoste"
 Output:
-"elegant sporty premium fashion environment, green and white color palette, clean tennis club atmosphere, luxury lifestyle photography, refined minimal background"
+{
+  "environmentPrompt": "dark black premium tech background, glossy surface, cinematic neon lighting, luxury ecommerce atmosphere",
+  "decorativeElements": "clearly visible glowing neon apple-shaped symbol in the upper corner, decorative background element only",
+  "editInstructions": ""
+}
 
+Example:
 Input:
-"quero um hambúrguer em restaurante chique"
-Output:
-"luxury gourmet restaurant environment, warm ambient lighting, wooden table, elegant background, shallow depth of field, premium food photography mood"
+"fundo verde com jacaré desenhado no canto superior"
 
-Input:
-"quero algo chamativo para vender no instagram"
 Output:
-"bold premium social media advertising background, vibrant but realistic lighting, clean commercial composition, high contrast, modern ecommerce atmosphere"
+{
+  "environmentPrompt": "vibrant green premium fashion background, sporty clean atmosphere, modern commercial photography",
+  "decorativeElements": "clearly visible small crocodile illustration in the upper corner, decorative background element only",
+  "editInstructions": ""
+}
 `
       },
       {
@@ -276,12 +279,21 @@ Output:
         content: textoUsuario
       }
     ],
-
-    temperature: 0.8,
-    max_tokens: 140
+    temperature: 0.4,
+    max_tokens: 250
   });
 
-  return resposta.choices?.[0]?.message?.content?.trim();
+  try {
+    return JSON.parse(
+      resposta.choices?.[0]?.message?.content || "{}"
+    );
+  } catch {
+    return {
+      environmentPrompt: textoUsuario,
+      decorativeElements: "",
+      editInstructions: ""
+    };
+  }
 }
 
 app.post(
@@ -293,8 +305,17 @@ app.post(
     try {
       const userId = req.user.id;
       const tema = req.body.tema?.trim();
-      const promptCenario =
-  await gerarPromptCenario(tema);
+      const pedidoImagem =
+  await interpretarPedidoImagem(tema);
+
+const promptCenario =
+  pedidoImagem.environmentPrompt || tema;
+
+const elementosDecorativos =
+  pedidoImagem.decorativeElements || "";
+
+const instrucoesEdicao =
+  pedidoImagem.editInstructions || "";
 
   console.log("\n====================");
 console.log("TEMA ORIGINAL:");
@@ -446,6 +467,24 @@ Use the user request ONLY as the desired environment/background.
 USER ENVIRONMENT REQUEST:
 "${promptCenario}"
 
+USER ENVIRONMENT REQUEST:
+"${promptCenario}"
+
+DECORATIVE BACKGROUND ELEMENTS:
+"${elementosDecorativos}"
+
+EDIT INSTRUCTIONS:
+"${instrucoesEdicao}"
+
+If decorative elements are requested, they must appear clearly in the background.
+Do not place them over the uploaded product.
+
+If the edit instruction conflicts with preserving the product, prioritize preserving the uploaded product.
+
+If removing a hand would damage the product, remove only visible hand areas around the product and keep the product intact.
+
+Do not generate official trademark logos. Generic decorative symbols are allowed when requested.
+
 TASK:
 
 Completely replace the current environment.
@@ -555,10 +594,48 @@ The requested background elements must appear clearly, but only in the backgroun
       throw new Error("Erro ao baixar imagem final da Replicate.");
     }
 
-    const imagemFinalBuffer =
-      Buffer.from(
-        await imagemFinalResponse.arrayBuffer()
-      );
+    let imagemFinalBuffer =
+  Buffer.from(
+    await imagemFinalResponse.arrayBuffer()
+  );
+
+const usuarioPediuMaca =
+  tema.toLowerCase().includes("apple") ||
+  tema.toLowerCase().includes("aplle") ||
+  tema.toLowerCase().includes("maçã") ||
+  tema.toLowerCase().includes("maca");
+
+if (usuarioPediuMaca) {
+  const simboloMacaSvg = `
+    <svg width="120" height="120" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+      <path
+        d="M72 18c-8 3-13 9-14 18 8 1 16-4 20-12 2-4 3-8 2-12-3 1-6 3-8 6z"
+        fill="white"
+        opacity="0.9"
+      />
+      <path
+        d="M60 38c-11-9-31-4-37 12-8 22 9 52 22 52 7 0 9-4 16-4s9 4 16 4c12 0 27-27 22-45-4-14-17-24-30-19-4 1-6 3-9 3z"
+        fill="white"
+        opacity="0.9"
+      />
+    </svg>
+  `;
+
+  const simboloBuffer =
+    Buffer.from(simboloMacaSvg);
+
+  imagemFinalBuffer =
+    await sharp(imagemFinalBuffer)
+      .composite([
+        {
+          input: simboloBuffer,
+          top: 40,
+          left: 860
+        }
+      ])
+      .png()
+      .toBuffer();
+}
 
     const nomeArquivo =
       `post-${Date.now()}.png`;
