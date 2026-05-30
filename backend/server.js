@@ -227,6 +227,8 @@ async function interpretarPedidoImagem(textoUsuario) {
       {
         role: "system",
         content: `
+   If the user asks to remove written content, text, prices, banners or labels, put this in editInstructions as:
+"remove promotional text, price tags, banners, watermarks and graphic overlays, but preserve the physical product design."
 You are an expert AI image editing prompt engineer.
 
 The uploaded image contains the real product.
@@ -475,6 +477,19 @@ DECORATIVE BACKGROUND ELEMENTS:
 
 EDIT INSTRUCTIONS:
 "${instrucoesEdicao}"
+TEXT AND OVERLAY CLEANUP:
+
+Remove all original promotional text, price tags, banners, captions, watermarks and graphic overlays from the uploaded image.
+
+Do not generate fake text.
+
+Do not create random letters.
+
+Do not create unreadable words.
+
+Keep the real product only.
+
+If text is printed on the product itself, preserve it only if it is part of the physical product design.
 
 If decorative elements are requested, they must appear clearly in the background.
 Do not place them over the uploaded product.

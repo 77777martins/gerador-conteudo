@@ -267,7 +267,10 @@ const loadingInterval =
 
     document.getElementById("copiarBtn").style.display = "block";
   } catch (err) {
-    console.log(err);
+    console.error(
+  "ERRO COMPLETO:",
+  err
+);
 
     resultado.innerHTML = `
       <div class="error-card">
