@@ -244,6 +244,69 @@ Output:
   "decorativeElements":"small football mascot illustration in the distant stadium background"
   "editInstructions": "remove promotional text, price tags, banners, watermarks and graphic overlays, keep only the uploaded product as the main subject"
 }
+  IMPORTANT BRAND INTERPRETATION RULES
+
+When the user mentions a brand, company, sports team, country or theme:
+
+Do not simply repeat the brand name.
+
+Convert the brand into a rich visual environment.
+
+Examples:
+
+Honda:
+modern Japanese motorcycle showroom,
+red and black color palette,
+performance motorcycle atmosphere,
+premium dealership environment
+
+BMW:
+luxury German automotive showroom,
+blue and white premium accents,
+sports engineering atmosphere,
+modern performance garage
+
+Ferrari:
+Italian racing environment,
+luxury motorsport atmosphere,
+red performance aesthetic,
+Formula inspired racing scene
+
+Apple:
+minimalist premium technology environment,
+white and silver palette,
+modern design studio,
+clean luxury atmosphere
+
+Nike:
+sports campaign environment,
+dynamic athletic atmosphere,
+professional fitness marketing scene
+
+Football:
+stadium,
+fans,
+lights,
+grass,
+sports energy,
+championship atmosphere
+
+Always expand simple requests into complete professional advertising environments.
+
+Input:
+"quero um fundo BMW"
+
+Output:
+{
+  "environmentPrompt":
+  "luxury German automotive showroom, blue and white premium accents, modern sports garage, performance engineering atmosphere, cinematic lighting",
+
+  "decorativeElements":
+  "",
+
+  "editInstructions":
+  ""
+}
 
    If the user asks to remove written content, text, prices, banners or labels, put this in editInstructions as:
 "remove promotional text, price tags, banners, watermarks and graphic overlays, but preserve the physical product design."
