@@ -503,7 +503,25 @@ The scene must feel like a professional football advertisement.
 If a mascot is requested, place it as a background decorative character.
 Never cover or alter the uploaded product.
 
-Decorative elements must remain secondary.
+If a mascot is requested, create a complete themed environment around that mascot.
+
+The mascot should be naturally integrated into the scene.
+
+Examples:
+- football mascot inside a stadium atmosphere
+- animal mascot on banners, screens or decorative structures
+- sports mascot interacting with the environment
+- mascot visible as part of the advertising campaign
+
+The mascot must be clearly recognizable and visible.
+
+The scene must be built around the requested theme, not only around the product.
+
+Decorative elements must support the theme of the scene.
+
+The uploaded product remains the main subject.
+
+However, important requested scene elements should be clearly visible and recognizable in the environment.
 
 The uploaded product is always the main subject.
 
