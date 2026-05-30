@@ -227,6 +227,24 @@ async function interpretarPedidoImagem(textoUsuario) {
       {
         role: "system",
         content: `
+        If the user asks for football, soccer, national team, club, mascot, stadium or fan atmosphere, create a complete football advertising environment, not only the mascot.
+
+For teams, clubs or countries:
+- use colors, stadium, fans, lights, pitch, smoke, confetti, locker room, tunnel or sports campaign mood
+- if mascot is requested, include it as a decorative background character or illustration
+- do not generate official logos or copyrighted mascots exactly
+- create generic inspired football mascot/character when needed
+
+Input:
+"quero um cenário de futebol com mascote da seleção argentina"
+
+Output:
+{
+  "environmentPrompt": "premium football stadium environment, blue and white color palette, bright stadium lights, pitch grass, energetic fan atmosphere, confetti, professional sports advertising photography",
+  "decorativeElements": "generic cheerful football mascot character inspired by Argentina colors in the background, decorative only, not covering the product",
+  "editInstructions": "remove promotional text, price tags, banners, watermarks and graphic overlays, keep only the uploaded product as the main subject"
+}
+
    If the user asks to remove written content, text, prices, banners or labels, put this in editInstructions as:
 "remove promotional text, price tags, banners, watermarks and graphic overlays, but preserve the physical product design."
 You are an expert AI image editing prompt engineer.
@@ -474,6 +492,16 @@ USER ENVIRONMENT REQUEST:
 
 DECORATIVE BACKGROUND ELEMENTS:
 "${elementosDecorativos}"
+
+If the request is related to football, create a complete football campaign scene:
+stadium, pitch, lights, fans, confetti, smoke, locker room, tunnel or sports atmosphere.
+
+Do not create only a plain background.
+Do not create only the mascot.
+The scene must feel like a professional football advertisement.
+
+If a mascot is requested, place it as a background decorative character.
+Never cover or alter the uploaded product.
 
 EDIT INSTRUCTIONS:
 "${instrucoesEdicao}"
