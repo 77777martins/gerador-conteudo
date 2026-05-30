@@ -34,4 +34,14 @@ export function atualizarPlanoVisual(
     plan === "pro"
       ? "PRO"
       : "FREE";
+
+      const pricingSection =
+  document.querySelector(".pricing-section");
+
+if (pricingSection) {
+  pricingSection.style.display =
+    plano === "pro"
+      ? "none"
+      : "block";
+}
 }
