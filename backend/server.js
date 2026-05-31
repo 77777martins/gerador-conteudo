@@ -397,9 +397,6 @@ console.log("ELEMENTOS DECORATIVOS:", elementosDecorativos);
 console.log("INSTRUÇÕES EDIÇÃO:", instrucoesEdicao);
 console.log("STYLE:", styleInstructions);
 
-const instrucoesEdicao =
-  pedidoImagem.editInstructions || "";
-
   console.log("\n====================");
 console.log("TEMA ORIGINAL:");
 console.log(tema);
