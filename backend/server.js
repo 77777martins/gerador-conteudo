@@ -380,15 +380,22 @@ app.post(
       const pedidoImagem =
   await interpretarPedidoImagem(tema);
 
-const promptCenario =
+  const promptCenario =
   pedidoImagem.environmentPrompt || tema;
 
 const elementosDecorativos =
   pedidoImagem.decorativeElements || "";
 
-  console.log("PROMPT CENARIO:", promptCenario);
+const instrucoesEdicao =
+  pedidoImagem.editInstructions || "";
+
+const styleInstructions =
+  pedidoImagem.styleInstructions || "";
+
+console.log("PROMPT CENARIO:", promptCenario);
 console.log("ELEMENTOS DECORATIVOS:", elementosDecorativos);
-console.log("INSTRUCOES EDICAO:", instrucoesEdicao);
+console.log("INSTRUÇÕES EDIÇÃO:", instrucoesEdicao);
+console.log("STYLE:", styleInstructions);
 
 const instrucoesEdicao =
   pedidoImagem.editInstructions || "";
