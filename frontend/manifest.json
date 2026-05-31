@@ -1,8 +1,9 @@
 {
-  "name": "Gerador IA",
+  "name": "Gerador de Post IA",
   "short_name": "Gerador IA",
   "description": "Crie posts e imagens profissionais com IA.",
-  "start_url": "/index.html",
+  "start_url": "/",
+  "scope": "/",
   "display": "standalone",
   "background_color": "#080817",
   "theme_color": "#7c3aed",
